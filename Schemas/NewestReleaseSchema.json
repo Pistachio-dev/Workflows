@@ -1,0 +1,30 @@
+
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/Pistachio-dev/DalamudPluginRepository/refs/heads/main/newReleaseSchema.json",
+    "title": "Newest Release Schema",
+    "description": "Makes sure the info for a plugin's new release is well formed",
+    "type" : "object",
+    "properties": {
+        "AssemblyVersion": {
+            "description": "New assembly version, or TestAssemblyVersion if test release, formatted as x.x.x.x",
+            "type": "string",
+            "pattern": "\\d+\\.\\d+\\.\\d+\\.\\d+"
+        },
+        "DalamudApiLevel":{
+            "description": "DalamudApiLevel, or TestingDalamudApiLevel if test release",
+            "type": "integer"
+        },
+        "ChangeLog" : {
+            "description": "List of all changes in this release",
+            "type": "string"
+        },
+        "IsTest": {
+            "description" : "True if this is a testing release, False otherwise",
+            "type": "boolean"
+        }
+    },
+    "required": ["AssemblyVersion", "DalamudApiLevel", "ChangeLog", "IsTest"]
+}
+
+
