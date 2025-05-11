@@ -1,0 +1,107 @@
+name: "Manual Release"
+on: workflow_dispatch
+env:
+  assemblyName: "SamplePlugin"
+  version: "0.0.0.0"
+  tag: "unset_tag"
+  target_repo: ${{ github.action_repository }} # Change this if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
+  token: ${{secrets.GITHUB_TOKEN}} # You'll need a special token with permissions on that repo
+jobs:
+  releasePluginUpdate: 
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: "Verify version information"
+        run: .\.github\Workflows\UpdateVersions.ps1 -PluginAssemblyName "${{env.assemblyName}}"
+      - name: "Get version number"
+        run: |
+            $versionRetrieved = .\.github\Workflows\GetVersionNumber.ps1 -PluginAssemblyName "${{env.assemblyName}}"
+            echo "version=$versionRetrieved" >> $env:GITHUB_ENV            
+      - name: "Debug that we have the correct version"
+        run: Write-Output "${{env.version}}"
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '9.x.x'
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Download Dalamud
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+      - name: Build
+        run: |
+          $ver = "${{env.version}}"
+          Write-Output $ver
+          invoke-expression 'dotnet build --no-restore --configuration Release --nologo -p:Version=$ver -p:FileVersion=$ver -p:AssemblyVersion=$ver'
+      - name: Archive
+        run: Compress-Archive -Path ${{env.assemblyName}}/bin/Release/* -DestinationPath ${{env.assemblyName}}.zip
+      - name: Retrieve data for release
+        run: |
+          $localPatchNotes = "$(.\.github\Workflows\GetChangeLog.ps1 -PluginAssemblyName ${{env.assemblyName}})"
+          Set-Content -Path ".\PatchNotes.txt" -Value $localPatchNotes
+          $localTag = "$(.\.github\Workflows\GetTag.ps1 -PluginAssemblyName ${{env.assemblyName}})"
+          Write-Output "Local tag: $($localTag)"
+          "tag=$localTag" >> $env:GITHUB_ENV
+      - name: Release
+        id: release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{env.assemblyName}}.zip
+          body_path: .\PatchNotes.txt
+          tag_name: ${{env.tag}}
+          make_latest: $true
+          repository: ${{ env.target_repo }}
+          token: ${{env.token}}
+      - name: Update downloads and timestamp
+        run: |
+          # inlinining the whole thing because it would not take an url as parameter no matter what, so screw it
+          $zipDownloadURL = ${{toJson(fromJson(steps.release.outputs.assets)[0].browser_download_url)}}
+          Write-Output "Download URL is $($zipDownloadUrl)"
+          $basePluginFolderPath = "${{env.assemblyName}}\"
+          $newestReleasePath = "$($basePluginFolderPath)NewestRelease.json"
+
+          $newestReleaseData = Get-Content $newestReleasePath | ConvertFrom-Json
+
+          $repoPath = "Repo.json";
+          $repoArray = Get-Content $repoPath | ConvertFrom-Json
+          $repoData = $repoArray | Select-Object -Index 0
+
+          if ($newestReleaseData.IsTest){
+              $repoData | Add-Member -NotePropertyName "DownloadLinkTesting" -NotePropertyValue $zipDownloadURL -Force
+              Write-Output "Download link set for testing"
+          }
+          else{
+              $repoData | Add-Member -NotePropertyName "DownloadLinkInstall" -NotePropertyValue $zipDownloadURL -Force
+              $repoData | Add-Member -NotePropertyName "DownloadLinkUpdate" -NotePropertyValue $zipDownloadURL -Force
+              Write-Output "Download link set for install and update"
+          }
+          
+          $utcDate = Get-Date -AsUTC
+          $timeStamp = [int]([Math]::Floor($utcDate.Subtract([DateTime]::UnixEpoch).TotalSeconds))
+
+          $repoData | Add-Member "LastUpdate" -NotePropertyValue $timeStamp -Force
+
+          Set-Content -Path $repoPath -Value (ConvertTo-Json @($repoArray))
+
+          # Clear the changelog from NewestRelease.json on a successful non-test release
+          if ($newestReleaseData.IsTest -eq $false){
+            $newestReleaseData | Add-Member "ChangeLog" -NotePropertyValue ""  -Force
+            Set-Content -Path $newestReleasePath -Value (ConvertTo-Json $newestReleaseData)
+          }
+      - name: Commit Repo.json and ChangeLog.json
+        run: |
+          $basePluginFolderPath = "${{env.assemblyName}}\"
+          git config --local user.name "[bot]github-actions_manual-release"
+          git config --local user.email "g[bot]github-actions_manual-release@users.noreply.github.com"
+          git add "Repo.json"
+          git add "$($basePluginFolderPath)ChangeLog.json"
+          git commit -m "[CI] Updating Repo.json and ChangeLog.json for new release"
+          git push origin master
+
+
+

@@ -1,0 +1,6 @@
+{
+    "AssemblyVersion" : "1.2.3.4",
+    "DalamudApiLevel" : 12,
+    "ChangeLog": "- Formatted like this.\n- Spacing matters\n- To match github's markup",
+    "IsTest": true
+}
