@@ -1,11 +1,13 @@
+#This workflow requires a file named NewestRelease.json in the main .csproj folder
+# that matches the schema at https://github.com/Pistachio-dev/Workflows/blob/master/Schemas/NewestReleaseSchema.json
 name: "Manual Release"
 on: workflow_dispatch
 env:
-  assemblyName: "SamplePlugin"
-  version: "0.0.0.0"
-  tag: "unset_tag"
+  internalPluginName: "plugin_assembly_name_here"  # Set this to the assembly name of the plugin to process
   target_repo: ${{ github.action_repository }} # Change this if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
   token: ${{secrets.GITHUB_TOKEN}} # You'll need a special token with permissions on that repo
+  internalPluginVersion: "0.0.0.0" # Set by the "Get version number" step
+  tag: "unset_tag" # Set by the "Retrieve data for release" step
 jobs:
   releasePluginUpdate: 
     runs-on: windows-latest
@@ -16,13 +18,13 @@ jobs:
         with:
           submodules: recursive
       - name: "Verify version information"
-        run: .\.github\Workflows\UpdateVersions.ps1 -PluginAssemblyName "${{env.assemblyName}}"
+        run: .\.github\Workflows\UpdateVersions.ps1 -PluginAssemblyName "${{env.internalPluginName}}"
       - name: "Get version number"
         run: |
-            $versionRetrieved = .\.github\Workflows\GetVersionNumber.ps1 -PluginAssemblyName "${{env.assemblyName}}"
-            echo "version=$versionRetrieved" >> $env:GITHUB_ENV            
+            $versionRetrieved = .\.github\Workflows\GetVersionNumber.ps1 -PluginAssemblyName "${{env.internalPluginName}}"
+            echo "internalPluginVersion=$versionRetrieved" >> $env:GITHUB_ENV
       - name: "Debug that we have the correct version"
-        run: Write-Output "${{env.version}}"
+        run: Write-Output "${{env.internalPluginVersion}}"
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
@@ -35,23 +37,23 @@ jobs:
           Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
       - name: Build
         run: |
-          $ver = "${{env.version}}"
-          Write-Output $ver
+          $ver = "${{env.internalPluginVersion}}"
+          Write-Output "Version: $($ver)"
           invoke-expression 'dotnet build --no-restore --configuration Release --nologo -p:Version=$ver -p:FileVersion=$ver -p:AssemblyVersion=$ver'
       - name: Archive
-        run: Compress-Archive -Path ${{env.assemblyName}}/bin/Release/* -DestinationPath ${{env.assemblyName}}.zip
+        run: Compress-Archive -Path ${{env.internalPluginName}}/bin/Release/* -DestinationPath ${{env.assemblyName}}.zip
       - name: Retrieve data for release
         run: |
-          $localPatchNotes = "$(.\.github\Workflows\GetChangeLog.ps1 -PluginAssemblyName ${{env.assemblyName}})"
+          $localPatchNotes = "$(.\.github\Workflows\GetChangeLog.ps1 -PluginAssemblyName ${{env.internalPluginName}})"
           Set-Content -Path ".\PatchNotes.txt" -Value $localPatchNotes
-          $localTag = "$(.\.github\Workflows\GetTag.ps1 -PluginAssemblyName ${{env.assemblyName}})"
+          $localTag = "$(.\.github\Workflows\GetTag.ps1 -PluginAssemblyName ${{env.internalPluginName}})"
           Write-Output "Local tag: $($localTag)"
           "tag=$localTag" >> $env:GITHUB_ENV
       - name: Release
         id: release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{env.assemblyName}}.zip
+          files: ${{env.internalPluginName}}.zip
           body_path: .\PatchNotes.txt
           tag_name: ${{env.tag}}
           make_latest: $true
@@ -62,7 +64,7 @@ jobs:
           # inlinining the whole thing because it would not take an url as parameter no matter what, so screw it
           $zipDownloadURL = ${{toJson(fromJson(steps.release.outputs.assets)[0].browser_download_url)}}
           Write-Output "Download URL is $($zipDownloadUrl)"
-          $basePluginFolderPath = "${{env.assemblyName}}\"
+          $basePluginFolderPath = "${{env.internalPluginName}}\"
           $newestReleasePath = "$($basePluginFolderPath)NewestRelease.json"
 
           $newestReleaseData = Get-Content $newestReleasePath | ConvertFrom-Json
@@ -95,7 +97,7 @@ jobs:
           }
       - name: Commit Repo.json and ChangeLog.json
         run: |
-          $basePluginFolderPath = "${{env.assemblyName}}\"
+          $basePluginFolderPath = "${{env.internalPluginName}}\"
           git config --local user.name "[bot]github-actions_manual-release"
           git config --local user.email "g[bot]github-actions_manual-release@users.noreply.github.com"
           git add "Repo.json"
