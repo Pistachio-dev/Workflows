@@ -33,7 +33,7 @@ $basePluginFolderPath = "$pluginAssesmblyName\"
 
 $schemaPath = "$($basePluginFolderPath)newReleaseSchema.json"
 $newestReleasePath = "$($basePluginFolderPath)NewestRelease.json"
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/Schemas/NewestReleaseSchema.json -OutFile $schemaPath
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/Schemas/NewestReleaseSchema.json -OutFile $schemaPath -RetryIntervalSec 20 -MaximumRetryCount 10
 $newReleaseSchemaString = Get-Content -Path $schemaPath -Raw
 $newReleaseDataString = Get-Content -Path $newestReleasePath -Raw
 

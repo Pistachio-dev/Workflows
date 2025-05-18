@@ -31,7 +31,7 @@ jobs:
           submodules: recursive
       - name: Copy powershell scripts to the current folder # They won't be commited
         run: |
-          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/powershellScripts.zip -OutFile powershellScripts.zip
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/powershellScripts.zip -OutFile powershellScripts.zip -RetryIntervalSec 20 -MaximumRetryCount 10
           Expand-Archive -Force powershellScripts.zip .github.\workflows\
       - name: "Verify version information"
         run: .\.github\Workflows\UpdateVersions.ps1 -PluginAssemblyName "${{env.internalPluginName}}"
