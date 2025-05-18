@@ -139,9 +139,10 @@ jobs:
           git config --local user.email "[bot]github-actions_manual-release@users.noreply.github.com"
           git add "Repo.json"
           git commit -m "[CI] Updating Repo.json for new release"
-          git push origin
-      - name: Update aggregate repo
-        uses: Pistachio-dev/DalamudPluginRepository/.github/workflows/aggregateRepos.yml@main
+          git push origin`
+  aggregateRepos: 
+    uses: Pistachio-dev/DalamudPluginRepository/.github/workflows/aggregateRepos.yml@main
+        
 
         
           
