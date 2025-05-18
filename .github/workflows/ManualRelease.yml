@@ -64,8 +64,6 @@ jobs:
           $localTag = "$(.\.github\Workflows\GetTag.ps1 -PluginAssemblyName ${{env.internalPluginName}})"
           Write-Output "Local tag: $($localTag)"
           "tag=$localTag" >> $env:GITHUB_ENV
-      - name: Pre-release directory check 
-        run: Get-ChildItem -recurse
       - name: Release
         id: release
         uses: softprops/action-gh-release@v2
