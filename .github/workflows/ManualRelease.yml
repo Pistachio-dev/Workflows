@@ -126,6 +126,7 @@ jobs:
         with:
           token: ${{env.token}}
           repository: ${{env.target_repo}}
+          path: "holdem_public_repo"
       - name: Debug file structure
         run: |
           Get-ChildItem -Path ..\.. -Recurse -Depth 4
