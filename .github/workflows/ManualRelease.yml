@@ -130,7 +130,7 @@ jobs:
       - name: Debug file structure
         run: |
           Get-ChildItem -Path ..\.. -Recurse -Depth 4
-          Write-Output ${{github.action_repository}}
+          Write-Output "${{github.action_repository}}"
       - name: Copy Repo.json to public repo and commit
         if: env.target_repo != github.action_repository  
         run: |          
