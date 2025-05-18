@@ -26,6 +26,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: Copy powershell scripts to the current folder # They won't be commited
+        run: |
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/GetChangeLog.ps1 -OutFile .\.github.\Worflows\GetChangeLog.ps1
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/GetVersionNumber.ps1 -OutFile .\.github.\Worflows\GetVersionNumber.ps1
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/GetTag.ps1 -OutFile .\.github.\Worflows\GetTag.ps1
+          Invoke-WebRequest -Uri https://raw.githubusercontent.com/Pistachio-dev/Workflows/refs/heads/master/.github/workflows/UpdateVersions.ps1 -OutFile .\.github.\Worflows\UpdateVersions.ps1          
       - name: "Verify version information"
         run: .\.github\Workflows\UpdateVersions.ps1 -PluginAssemblyName "${{env.internalPluginName}}"
       - name: "Get version number"
