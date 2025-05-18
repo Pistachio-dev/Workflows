@@ -1,11 +1,20 @@
 #This workflow requires a file named NewestRelease.json in the main .csproj folder
 # that matches the schema at https://github.com/Pistachio-dev/Workflows/blob/master/Schemas/NewestReleaseSchema.json
-name: "Manual Release"
-on: workflow_dispatch
+# It is intended to be called from each plugin repository
+name: "Manual remote release"
+on:
+  workflow_call:
+    inputs:
+      internalPluginName:
+        required: true
+        type: string
+    secrets:
+      token: #Usually "secrets.GITHUB_TOKEN", but sometimes you'll need a fine grained personal one
+        required: true
 env:
-  internalPluginName: "plugin_assembly_name_here"  # Set this to the assembly name of the plugin to process
+  internalPluginName: ${{inputs.internalPluginName}}  # Set this to the assembly name of the plugin to process
   target_repo: ${{ github.action_repository }} # Change this if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
-  token: ${{secrets.GITHUB_TOKEN}} # You'll need a special token with permissions on that repo
+  token: ${{secrets.token}} # You'll need a special token with permissions on that repo
   internalPluginVersion: "0.0.0.0" # Set by the "Get version number" step
   tag: "unset_tag" # Set by the "Retrieve data for release" step
 jobs:
