@@ -126,8 +126,19 @@ jobs:
         with:
           token: ${{env.token}}
           repository: ${{env.target_repo}}
+      - name: Copy Repo.json to public repo and commit
+        run: |
+          Copy-Item -Path ..\..\${{github.action_repository}}\${{github.action_repository}}\Repo.json -Destination Repo.json
+      - name: Push updated repo
+        run: |
+          git config --local user.name "[bot]github-actions_manual-release"
+          git config --local user.email "[bot]github-actions_manual-release@users.noreply.github.com"
+          git add "Repo.json"
+          git commit -m "[CI] Updating Repo.json for new release"
+          git push origin
       - name: Debug file structure
-        run: Get-ChildItem -Path . -Recurse -Depth 4
+        run: Get-ChildItem -Path ..\.. -Recurse -Depth 4
+        
           
 
 
