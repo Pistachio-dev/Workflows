@@ -127,9 +127,11 @@ jobs:
           token: ${{env.token}}
           repository: ${{env.target_repo}}
       - name: Copy Repo.json to public repo and commit
+        if: env.target_repo != github.action_repository  
         run: |
           Copy-Item -Path ..\..\${{github.action_repository}}\${{github.action_repository}}\Repo.json -Destination Repo.json
       - name: Push updated repo
+        if: env.target_repo != github.action_repository  
         run: |
           git config --local user.name "[bot]github-actions_manual-release"
           git config --local user.email "[bot]github-actions_manual-release@users.noreply.github.com"
