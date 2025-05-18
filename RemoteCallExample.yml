@@ -9,5 +9,6 @@ jobs:
             contents: write
         with:
             internalPluginName: "CardsAgainstHyurmanity"
+            target_repo: ${{github.action_repository}}
         secrets:
             token: ${{secrets.GITHUB_TOKEN}}

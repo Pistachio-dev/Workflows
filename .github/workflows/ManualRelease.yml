@@ -8,12 +8,15 @@ on:
       internalPluginName:
         required: true
         type: string
+      target_repo: # github.action_repository, except if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
+        required: true 
+        type: string
     secrets:
       token: #Usually "secrets.GITHUB_TOKEN", but sometimes you'll need a fine grained personal one
         required: true
 env:
   internalPluginName: ${{inputs.internalPluginName}}  # Set this to the assembly name of the plugin to process
-  target_repo: ${{ github.action_repository }} # Change this if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
+  target_repo: ${{ inputs.target_repo }} # Change this if releasing on a different repo. Eg Pistachio-dev/WorkflowsTestReleaseOnly
   token: ${{secrets.token}} # You'll need a special token with permissions on that repo
   internalPluginVersion: "0.0.0.0" # Set by the "Get version number" step
   tag: "unset_tag" # Set by the "Retrieve data for release" step
