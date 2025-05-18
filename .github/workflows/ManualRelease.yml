@@ -126,7 +126,7 @@ jobs:
         with:
           token: ${{env.token}}
           repository: ${{env.target_repo}}
-          path: "..\\holdem_public_repo"
+          path: "holdem_public_repo"
       - name: Debug file structure
         run: |
           Get-ChildItem -Path ..\.. -Recurse -Depth 4
@@ -134,10 +134,11 @@ jobs:
       - name: Copy Repo.json to public repo and commit
         if: env.target_repo != github.action_repository  
         run: |          
-          Copy-Item -Path Repo.json -Destination "..\\holdem_public_repo\\Repo.json"
+          Copy-Item -Path Repo.json -Destination "holdem_public_repo\\Repo.json"
       - name: Push updated repo
         if: env.target_repo != github.action_repository  
         run: |
+          cd "holdem_public_repo"
           git config --local user.name "[bot]github-actions_manual-release"
           git config --local user.email "[bot]github-actions_manual-release@users.noreply.github.com"
           git add "Repo.json"
