@@ -115,11 +115,21 @@ jobs:
         run: |
           $basePluginFolderPath = "${{env.internalPluginName}}\"
           git config --local user.name "[bot]github-actions_manual-release"
-          git config --local user.email "g[bot]github-actions_manual-release@users.noreply.github.com"
+          git config --local user.email "[bot]github-actions_manual-release@users.noreply.github.com"
           git add "Repo.json"
           git add "$($basePluginFolderPath)ChangeLog.json"
           git commit -m "[CI] Updating Repo.json and ChangeLog.json for new release"
           git push origin master
+      - name: Copy Repo.json to public repository
+        if: env.target_repo != github.action_repository  
+        uses: actions/checkout@v2
+        with:
+          token: ${{env.token}}
+          repository: ${{env.target_repo}}
+      - name: Debug file structure
+        run: Get-ChildItem -Path . -Recurse -Depth 4
+          
+
 
 
 
