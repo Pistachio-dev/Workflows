@@ -104,6 +104,8 @@ jobs:
 
           $repoData | Add-Member "LastUpdate" -NotePropertyValue $timeStamp -Force
 
+          $repoData | Add-Member "InternalName" -NotePropertyValue "${{env.internalPluginName}}" -Force
+
           Set-Content -Path $repoPath -Value (ConvertTo-Json @($repoArray))
 
           # Clear the changelog from NewestRelease.json on a successful non-test release
