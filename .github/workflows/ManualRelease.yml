@@ -57,7 +57,7 @@ jobs:
           Write-Output "Version: $($ver)"
           invoke-expression 'dotnet build --no-restore --configuration Release --nologo -p:Version=$ver -p:FileVersion=$ver -p:AssemblyVersion=$ver'
       - name: Archive (move the dalamud packager artifact somewhere easier to access)
-        run: Copy-Item -Path ${{env.internalPluginName}}/bin/x64/Release/${{env.internalPluginName}} -Destination ${{env.internalPluginName}}.zip
+        run: Copy-Item -Path ${{env.internalPluginName}}/bin/x64/Release/${{env.internalPluginName}}/latest.zip -Destination ${{env.internalPluginName}}.zip
       - name: Retrieve data for release
         run: |
           $localPatchNotes = "$(.\.github\Workflows\GetChangeLog.ps1 -PluginAssemblyName ${{env.internalPluginName}})"
@@ -69,7 +69,7 @@ jobs:
         id: release
         uses: softprops/action-gh-release@v2
         with:
-          files: latest.zip
+          files: ${{env.internalPluginName}}.zip
           body_path: .\PatchNotes.txt
           tag_name: ${{env.tag}}
           make_latest: $true
