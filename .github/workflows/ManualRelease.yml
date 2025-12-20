@@ -75,6 +75,9 @@ jobs:
           make_latest: $true
           repository: ${{ env.target_repo }}
           token: ${{env.token}}
+      - name: Sleep for 10 seconds
+        run: Start-Sleep -s 10
+        shell: powershell
       - name: Update downloads and timestamp
         run: |
           # inlinining the whole thing because it would not take an url as parameter no matter what, so screw it
