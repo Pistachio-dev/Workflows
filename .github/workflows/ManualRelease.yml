@@ -79,7 +79,7 @@ jobs:
         run: |
           # inlinining the whole thing because it would not take an url as parameter no matter what, so screw it
           $repoToPublishOn = "${{env.target_repo}}";
-          if (!$repoToPublishOn) // Check for null or empty
+          if (!$repoToPublishOn) #Check for null or empty
           {
               $repoToPublishOn = "${{github.repository}}";
           }
