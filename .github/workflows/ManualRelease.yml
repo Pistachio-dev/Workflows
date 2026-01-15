@@ -78,7 +78,7 @@ jobs:
       - name: Update downloads and timestamp
         run: |
           # inlinining the whole thing because it would not take an url as parameter no matter what, so screw it
-          $zipDownloadURL = "https://github.com/${{github.repository}}/releases/download/${{env.tag}}/${{env.internalPluginName}}.zip"
+          $zipDownloadURL = "https://github.com/${{env.target_repo}}/releases/download/${{env.tag}}/${{env.internalPluginName}}.zip"
           Write-Output "Download URL is $($zipDownloadUrl)"
           $basePluginFolderPath = "${{env.internalPluginName}}\"
           $newestReleasePath = "$($basePluginFolderPath)NewestRelease.json"
